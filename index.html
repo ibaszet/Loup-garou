@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -138,7 +138,7 @@ function tick(){const n=new Date(),c=$('#clk'),d=$('#dt');if(c)c.textContent=n.t
 const T=S.tmr;if(T.run&&Date.now()>=T.end){T.run=false;T.left=0;save();try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}toast('⏰ Temps écoulé !');render();return}
 document.querySelectorAll('.tm').forEach(e=>e.textContent=fmt(tl()))}
 /* ===== Vues ===== */
-const top=(t,v)=>`<div class="top"><button class="ic" data-a="go" data-v="${v||'home'}" aria-label="Retour">←</button><h1>${t}</h1><span class="mini" id="clk"></span></div>`;
+const hdr=(t,v)=>`<div class="top"><button class="ic" data-a="go" data-v="${v||'home'}" aria-label="Retour">←</button><h1>${t}</h1><span class="mini" id="clk"></span></div>`;
 function vHome(){const on=S.started&&S.phase!=='over',can=S.started||S.players.length;
 return `<header class="hero"><div class="moon"></div><h1>LOUPS-GAROUS</h1><p class="sub">GAME MANAGER</p><p class="loc">Pôle Universitaire de Koléa</p><span class="tag">KOLÉA CAMPUS EDITION</span><div class="clock"><b id="clk"></b><span id="dt"></span></div></header>
 <main class="grid"><button class="card" data-a="new"><i>🌑</i><b>Nouvelle Partie</b><small>Créer et configurer</small></button>
@@ -150,7 +150,7 @@ function vSetup(){syncSlots();const c=check(),n=S.players.length;
 const modes=`<div class="chips"><button class="chip" data-a="rall">🎲 Tout au hasard</button><button class="chip" data-a="rfill">🎲 Compléter au hasard</button><button class="chip" data-a="rclr">Vider</button></div>`;
 const slots=S.slots.length?S.slots.map((x,i)=>`<div class="slot"><span>${R[x.r][1]} ${R[x.r][0]}</span><select data-slot="${i}"><option value="">— Choisir —</option>${S.players.map(p=>`<option value="${p.id}" ${x.p===p.id?'selected':''} ${S.slots.some((y,j)=>j!==i&&y.p===p.id)?'disabled':''}>${esc(p.name)}</option>`).join('')}</select></div>`).join(''):'<p class="empty">Ajoutez des rôles ci-dessus.</p>';
 const vl=S.autoVill?`<div class="slot"><span>${R.vill[1]} Villageois</span><em class="muted">Auto : ${c.empty?'—':c.un} restant(s)</em></div>`:'';
-return top('Nouvelle partie')+`<section class="panel"><h2>Partie</h2><input id="gn" placeholder="Nom de la partie" value="${esc(S.name)}" maxlength="40"></section>
+return hdr('Nouvelle partie')+`<section class="panel"><h2>Partie</h2><input id="gn" placeholder="Nom de la partie" value="${esc(S.name)}" maxlength="40"></section>
 <section class="panel"><h2>Joueurs (${n})</h2><form id="pf" class="row"><input id="pn" placeholder="Nom du joueur" maxlength="24" autocomplete="off"><button class="btn">Ajouter</button></form>
 ${n?`<ul class="list">${S.players.map(p=>`<li><span>${esc(p.name)}</span><span><button class="ic" data-a="ren" data-id="${p.id}" aria-label="Renommer">✎</button> <button class="ic" data-a="del" data-id="${p.id}" aria-label="Supprimer">✕</button></span></li>`).join('')}</ul>`:'<p class="empty">Aucun joueur. Ajoutez au moins 4 noms.</p>'}</section>
 <section class="panel"><h2>Rôles</h2><div class="chips"><button class="chip" data-a="pre" data-k="s">Simple</button><button class="chip" data-a="pre" data-k="c">Classique</button><button class="chip" data-a="pre" data-k="f">Complet</button></div>
@@ -186,7 +186,7 @@ const tabs=[['pl','Joueurs'],['ro','Rôles (MJ)'],['jr','Journal']];let tc='';
 if(S.tab==='pl')tc=`<ul class="list">${S.players.map(x=>`<li class="${x.alive?'':'dead'}"><span>${x.alive?'🟢':'⚫'} ${esc(x.name)}</span><button class="ic" data-a="tog" data-id="${x.id}" title="Éliminer / réanimer">${x.alive?'☠':'↺'}</button></li>`).join('')}</ul>`;
 if(S.tab==='ro')tc=`<div class="alert w">🔒 Privé : ne montrez pas cet écran aux joueurs.</div><ul class="list">${S.players.map(x=>`<li class="${x.alive?'':'dead'}"><span>${esc(x.name)}</span><span class="pill">${R[x.role][1]} ${R[x.role][0]}</span></li>`).join('')}</ul>`;
 if(S.tab==='jr')tc=S.log.length?`<ul class="list log">${S.log.slice(0,60).map(l=>`<li><time>${l.t}</time>${esc(l.x)}</li>`).join('')}</ul>`:'<p class="empty">Journal vide.</p>';
-return top(esc(S.name||'Partie'))+`<div class="stats"><div><b>${S.players.length}</b>joueurs</div><div><b>${al}</b>vivants</div><div><b>${S.players.length-al}</b>éliminés</div></div>
+return hdr(esc(S.name||'Partie'))+`<div class="stats"><div><b>${S.players.length}</b>joueurs</div><div><b>${al}</b>vivants</div><div><b>${S.players.length-al}</b>éliminés</div></div>
 <div class="phases">${Object.keys(PH).map(k=>`<span class="${S.phase===k?'on':''}">${PH[k][1]}<small>${PH[k][0]}</small></span>`).join('')}</div>${timerBox()}${p}
 ${S.phase!=='over'&&!S.hunter?`<div class="row"><button class="btn" style="flex:1" data-a="next">⏭ Phase suivante</button><button class="btn" style="flex:1" data-a="topub">👁 Vue publique</button></div>
 <details class="panel"><summary>Victoire manuelle (règle maison)</summary><div class="row"><button class="btn sm" data-a="ov" data-t="village">Village</button><button class="btn sm" data-a="ov" data-t="loups">Loups</button><button class="btn sm" data-a="ov" data-t="none">Égalité</button></div></details>`:''}
@@ -202,7 +202,7 @@ return `<div class="win"><div class="moon"></div><h1>${tx[0]} ${tx[1]}</h1><p cl
 <div class="panel"><h2>Résumé</h2><ul class="list">${S.players.map(x=>`<li class="${x.alive?'':'dead'}"><span>${esc(x.name)}</span><span class="pill">${R[x.role][1]} ${R[x.role][0]}</span></li>`).join('')}</ul></div>
 ${S.hist?`<div class="panel"><h2>Historique</h2><ul class="list log">${S.log.slice().reverse().map(l=>`<li><time>${l.t}</time>${esc(l.x)}</li>`).join('')}</ul></div>`:''}
 <button class="btn" style="width:100%;margin-bottom:8px" data-a="hist">${S.hist?'Masquer':'Revoir'} l’historique</button><button class="btn pri" data-a="new">Nouvelle partie</button><button class="btn" style="width:100%;margin-top:8px" data-a="go" data-v="home">Accueil</button>`}
-function vRules(){return top('Règles &amp; Aides')+`<div class="panel"><h2>Phases</h2><ul class="list"><li>🌙 <b>Nuit</b> : chaque rôle agit dans l’ordre, les yeux fermés pour les autres.</li><li>☀️ <b>Jour</b> : annonce des morts, discussion.</li><li>🗳️ <b>Vote</b> : le village élimine un suspect.</li><li>🏆 <b>Fin</b> : le Village gagne sans loups ; les loups gagnent à parité.</li></ul></div>
+function vRules(){return hdr('Règles &amp; Aides')+`<div class="panel"><h2>Phases</h2><ul class="list"><li>🌙 <b>Nuit</b> : chaque rôle agit dans l’ordre, les yeux fermés pour les autres.</li><li>☀️ <b>Jour</b> : annonce des morts, discussion.</li><li>🗳️ <b>Vote</b> : le village élimine un suspect.</li><li>🏆 <b>Fin</b> : le Village gagne sans loups ; les loups gagnent à parité.</li></ul></div>
 <div class="panel"><h2>Rôles</h2><ul class="list"><li>🐺 <b>Loup-Garou</b> : dévore une victime chaque nuit.</li><li>🧑‍🌾 <b>Villageois</b> : aucun pouvoir, vote le jour.</li><li>🔮 <b>Voyante</b> : découvre le rôle d’un joueur chaque nuit.</li><li>🧪 <b>Sorcière</b> : une potion de vie, une potion de mort.</li><li>🏹 <b>Chasseur</b> : tire sur un joueur en mourant.</li><li>💘 <b>Cupidon</b> : lie deux amoureux (nuit 1) ; si l’un meurt, l’autre aussi.</li><li>👧 <b>Petite Fille</b> : peut espionner les loups.</li><li>🛡️ <b>Salvateur</b> : protège un joueur (pas deux nuits de suite le même).</li></ul></div>
 <div class="panel"><h2>Conseils MJ</h2><p class="muted">Une seule partie à la fois. Utilisez la vue publique pour l’écran visible par tous : elle ne montre jamais les rôles. Tout est sauvegardé automatiquement.</p></div>`}
 /* ===== Rendu ===== */
