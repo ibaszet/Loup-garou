@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Loups-Garous · Game Manager</title>
+<style>
+:root{--bg:#0a0e24;--bg2:#121838;--card:#171d45;--line:#2b3270;--pur:#8b6cff;--pur2:#b9a6ff;--moon:#ece9ff;--mut:#9aa0cf;--red:#ff5d6c;--ok:#5fd6a0;--warn:#ffc857}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1d1a52 0,var(--bg) 60%) fixed;color:var(--moon);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+#app{max-width:640px;margin:0 auto;padding:14px 14px 40px;padding-top:max(14px,env(safe-area-inset-top))}
+h1,h2{font-family:Georgia,'Times New Roman',serif;margin:0}
+h1{font-size:2rem;letter-spacing:.16em;text-align:center}
+h2{font-size:1.05rem;margin-bottom:10px;color:var(--pur2)}
+.hero{text-align:center;padding:18px 0 12px}
+.moon{width:58px;height:58px;border-radius:50%;margin:0 auto 12px;box-shadow:inset -15px -5px 0 0 var(--moon),0 0 28px rgba(185,166,255,.35);animation:glow 5s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:inset -15px -5px 0 0 var(--moon),0 0 44px rgba(185,166,255,.6)}}
+.sub{letter-spacing:.5em;margin:2px 0 8px;color:var(--pur2);font-weight:600}
+.loc{margin:0;color:var(--mut)}
+.tag{display:inline-block;margin-top:8px;padding:3px 12px;border:1px solid var(--pur);border-radius:99px;font-size:.75rem;letter-spacing:.12em;color:var(--pur2)}
+.clock{margin-top:14px;display:flex;flex-direction:column;gap:2px}.clock b{font:600 1.6rem ui-monospace,monospace;letter-spacing:.06em}.clock span{color:var(--mut);font-size:.85rem;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.card{background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:18px;padding:18px 12px;color:inherit;font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:132px;cursor:pointer;text-align:center;transition:transform .15s,border-color .15s}
+.card:active{transform:scale(.97);border-color:var(--pur)}.card i{font-style:normal;font-size:1.9rem}.card b{font-size:1rem}.card small{color:var(--mut)}
+.card:disabled{opacity:.4;cursor:not-allowed}
+footer{text-align:center;color:var(--mut);font-size:.8rem;margin-top:26px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}.top h1{font-size:1.15rem;letter-spacing:.06em;flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top .mini{font:.85rem ui-monospace,monospace;color:var(--mut)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.panel.warn{border-color:var(--warn)}.panel.bad{border-color:var(--red)}
+input,select{width:100%;background:#0d1230;color:var(--moon);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;min-height:46px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--pur);outline-offset:1px}
+.row{display:flex;gap:8px;margin-bottom:8px}.row>.btn{flex:none}
+.btn{background:#262d63;color:var(--moon);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer;min-height:46px}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.4}
+.btn.pri{background:linear-gradient(135deg,#7650ff,#5a3fd6);border-color:var(--pur);width:100%;margin-top:8px}
+.btn.red{background:#4a1d33;border-color:var(--red)}.btn.sm{padding:8px 12px;min-height:38px;font-size:.9rem}
+.ic{background:#222a5c;border:1px solid var(--line);color:var(--moon);border-radius:10px;width:38px;height:38px;font:inherit;cursor:pointer}
+.list{list-style:none;margin:0;padding:0}.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.list li:last-child{border:0}
+.dead{opacity:.5;text-decoration:line-through}
+.empty,.muted{color:var(--mut);margin:6px 0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.chip{background:#1f2658;border:1px solid var(--pur);color:var(--pur2);border-radius:99px;padding:8px 14px;font:inherit;cursor:pointer}
+.rr{display:flex;justify-content:space-between;align-items:center;padding:6px 0}.rr em{color:var(--mut)}.step{display:flex;align-items:center;gap:10px}.step b{min-width:20px;text-align:center}
+.chk{display:flex;gap:10px;align-items:center;margin-top:8px}.chk input{width:22px;min-height:22px}
+.slot{display:grid;grid-template-columns:42% 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.alert{border-radius:10px;padding:8px 12px;margin:6px 0;font-size:.92rem}.alert.e{background:#3d1a2c;border:1px solid var(--red)}.alert.w{background:#3a3016;border:1px solid var(--warn)}.alert.o{background:#143a2d;border:1px solid var(--ok)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.stats div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;color:var(--mut);font-size:.85rem}.stats b{display:block;font-size:1.5rem;color:var(--moon)}
+.phases{display:flex;gap:6px;margin-bottom:12px}.phases span{flex:1;text-align:center;padding:8px 2px;border-radius:12px;border:1px solid var(--line);opacity:.5;font-size:1.2rem}.phases small{display:block;font-size:.7rem}.phases .on{opacity:1;background:#2a2268;border-color:var(--pur);box-shadow:0 0 14px rgba(139,108,255,.5)}
+.tmr{text-align:center}.tm.big{display:block;font:700 2.6rem ui-monospace,monospace;letter-spacing:.05em}.tmr .row{justify-content:center;flex-wrap:wrap;margin:8px 0 0}.tmr input{width:80px}
+.role{font-size:1.4rem;font-weight:700;margin:4px 0}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:1;padding:10px 4px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--mut);font:inherit;cursor:pointer}.tabs .on{background:#262d63;color:var(--moon);border-color:var(--pur)}
+.log li{display:block}.log time{color:var(--pur2);font:.8rem ui-monospace,monospace;margin-right:8px}
+.vr{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+.win{text-align:center;padding:26px 10px}.win h1{margin:12px 0}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;background:#2a2268;font-size:.85rem}
+.pub{text-align:center}.pub .pl{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}.pub .pl div{background:#1f2658;border:1px solid var(--line);border-radius:12px;padding:12px}
+#ov{position:fixed;inset:0;background:rgba(3,5,18,.8);display:none;align-items:center;justify-content:center;padding:20px;z-index:9}#ov.on{display:flex}
+#ov .box{background:var(--card);border:1px solid var(--pur);border-radius:18px;padding:20px;max-width:380px;width:100%}#ov .row{margin:16px 0 0}#ov .btn{flex:1}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2a2268;border:1px solid var(--pur);padding:10px 18px;border-radius:12px;z-index:10;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}#toast.on{opacity:1}
+details summary{cursor:pointer;color:var(--pur2);padding:6px 0}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="ov"></div><div id="toast"></div>
+<script>
+'use strict';
+/* ===== Données ===== */
+const K='lg_kolea_v1';
+const R={loup:['Loup-Garou','🐺'],vill:['Villageois','🧑‍🌾'],voy:['Voyante','🔮'],sor:['Sorcière','🧪'],chas:['Chasseur','🏹'],cup:['Cupidon','💘'],pf:['Petite Fille','👧'],sal:['Salvateur','🛡️']};
+const PH={lobby:['Configuration','⚙️'],night:['Nuit','🌙'],day:['Jour','☀️'],vote:['Vote','🗳️'],over:['Fin','🏆']};
+const def=()=>({view:'home',tab:'pl',name:'',players:[],counts:{loup:1,vill:0,voy:1,sor:0,chas:0,cup:0,pf:0,sal:0},slots:[],autoVill:true,started:false,phase:'lobby',night:0,step:0,nd:{},log:[],pub:[],set:{tie:'revote',parity:true,deadVote:false},votes:{},tmr:{dur:180,left:180,end:0,run:false},win:null,lovers:[],pot:{heal:false,poison:false},lastSave:null,hunter:null,hist:false});
+let S=load();
+function load(){try{const d=JSON.parse(localStorage.getItem(K));if(d&&Array.isArray(d.players)&&d.counts&&d.set&&d.tmr)return Object.assign(def(),d)}catch(e){}return def()}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+/* ===== Utilitaires ===== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const P=id=>S.players.find(p=>p.id===id);
+const alive=()=>S.players.filter(p=>p.alive);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const hm=()=>new Date().toLocaleTimeString('fr-FR');
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function addLog(t,pubT){S.log.unshift({t:hm(),x:t});if(pubT)S.pub.unshift({t:hm(),x:pubT})}
+let tt;function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2600)}
+let cb=null;
+function ask(msg,fn,ok='Confirmer'){cb=fn;$('#ov').innerHTML=`<div class="box"><p>${msg}</p><div class="row"><button class="btn" data-a="no">Annuler</button><button class="btn red" data-a="yes">${ok}</button></div></div>`;$('#ov').classList.add('on')}
+const closeAsk=()=>$('#ov').classList.remove('on');
+const wolves=()=>S.players.filter(p=>p.alive&&p.role==='loup').length;
+/* ===== Distribution des rôles ===== */
+function syncSlots(){const out=[];for(const r in R){if(r==='vill'&&S.autoVill)continue;const old=S.slots.filter(x=>x.r===r);for(let i=0;i<S.counts[r];i++){const x=old[i]||{r,p:null};if(x.p&&!P(x.p))x.p=null;out.push(x)}}S.slots=out}
+function check(){const e=[],w=[],n=S.players.length,used=S.slots.filter(x=>x.p).map(x=>x.p),empty=S.slots.filter(x=>!x.p).length,un=n-used.length;
+if(n<4)e.push('Minimum 4 joueurs (actuellement '+n+').');
+if(S.counts.loup<1)e.push('Il faut au moins 1 Loup-Garou.');
+if(S.slots.length>n)e.push('Plus de rôles ('+S.slots.length+') que de joueurs ('+n+').');
+if(new Set(used).size!==used.length)e.push('Un joueur a plusieurs rôles.');
+if(!S.autoVill&&S.slots.length!==n)e.push('Total des rôles ('+S.slots.length+') ≠ joueurs ('+n+').');
+if(S.counts.loup*2>=n&&n>=4)w.push('Trop de loups : la partie sera déséquilibrée.');
+if(empty)w.push(empty+' rôle(s) sans joueur assigné.');
+if(un>0&&!S.autoVill&&!empty)w.push(un+' joueur(s) sans rôle.');
+return{e,w,empty,un,used:used.length}}
+function confirmDist(){const c=check();if(c.e.length||c.empty)return toast('Configuration incomplète ou invalide.');
+S.players.forEach(p=>{p.role=S.autoVill?'vill':null;p.alive=true});
+S.slots.forEach(x=>{P(x.p).role=x.r});
+Object.assign(S,{started:true,phase:'night',night:1,step:0,nd:{},log:[],pub:[],votes:{},lovers:[],pot:{heal:false,poison:false},lastSave:null,hunter:null,win:null,view:'dash',tab:'pl'});
+addLog('Partie lancée : '+S.players.length+' joueurs.','La partie commence. La nuit tombe…')}
+/* ===== Nuit ===== */
+function steps(){const h=r=>S.players.some(p=>p.alive&&p.role===r),o=[];if(S.night===1&&h('cup'))o.push('cup');if(h('sal'))o.push('sal');if(h('voy'))o.push('voy');o.push('loup');if(h('sor'))o.push('sor');if(h('pf'))o.push('pf');return o}
+function dawn(){const nd=S.nd,d=[];if(nd.victim&&nd.victim!==nd.save&&!nd.heal)d.push(nd.victim);if(nd.poison&&!d.includes(nd.poison))d.push(nd.poison);
+S.lastSave=nd.save||null;S.phase='day';S.step=0;S.nd={};S.votes={};addLog('☀️ Jour '+S.night+' : lever du soleil.');
+kill(d,'nuit')}
+function kill(ids,cause){const q=[...ids],died=[];
+while(q.length){const p=P(q.shift());if(!p||!p.alive)continue;p.alive=false;died.push(p);if(S.lovers.includes(p.id)){const o=S.lovers.find(x=>x!==p.id);if(o)q.push(o)}}
+died.forEach(p=>addLog('☠ '+p.name+' ('+R[p.role][0]+') — '+cause,'☠ '+p.name+' est éliminé(e).'));
+if(!died.length)addLog('Aucune mort.',cause==='nuit'?'Nuit calme : personne n’est mort.':null);
+const h=died.find(p=>p.role==='chas');
+if(h&&alive().length)S.hunter=h.id;else checkWin()}
+function checkWin(){if(S.phase==='over'||S.hunter)return;const w=wolves(),o=alive().length-w;
+if(w===0)setWin('village');else if(S.set.parity?w>=o:o===0)setWin('loups')}
+function setWin(t){S.win={t};S.phase='over';S.view='win';S.hist=false;S.tmr.run=false;addLog('🏆 Fin de partie : '+({village:'Village',loups:'Loups-Garous',none:'Sans vainqueur'}[t]),'Fin de la partie.')}
+function nextPhase(){
+if(S.phase==='night'){if(!S.nd.victim)return ask('Les loups n’ont désigné aucune victime. Lever le jour quand même ?',()=>{dawn();done()});dawn()}
+else if(S.phase==='day'){S.phase='vote';S.votes={};addLog('🗳️ Début du vote.','Le vote commence.')}
+else if(S.phase==='vote')return ask('Passer le vote sans éliminer personne ?',()=>{goNight();addLog('Vote ignoré.','Personne n’est éliminé.');done()});
+done()}
+function goNight(){S.phase='night';S.night++;S.step=0;S.nd={};S.votes={};addLog('🌙 Nuit '+S.night+'.','La nuit '+S.night+' tombe…')}
+function doVote(){const v=S.votes,ids=Object.keys(v).filter(k=>v[k]>0&&P(k)&&P(k).alive);if(!ids.length)return toast('Aucun vote enregistré.');
+const m=Math.max(...ids.map(k=>v[k]));let t=ids.filter(k=>v[k]===m);
+if(t.length>1){const nm=t.map(k=>P(k).name).join(', ');
+if(S.set.tie==='revote'){S.votes={};addLog('Égalité ('+nm+') : nouveau vote.','Égalité : on revote.');done();return toast('Égalité : revotez.')}
+if(S.set.tie==='none'){goNight();addLog('Égalité ('+nm+') : aucune élimination.','Égalité : personne n’est éliminé.');return done()}
+addLog('Égalité ('+nm+') : tirage au sort.');t=[t[Math.floor(Math.random()*t.length)]]}
+goNight();kill([t[0]],'vote ('+m+' voix)');done()}
+function done(){closeAsk();save();render()}
+/* ===== Chrono ===== */
+const tl=()=>S.tmr.run?Math.max(0,Math.ceil((S.tmr.end-Date.now())/1000)):S.tmr.left;
+function tick(){const n=new Date(),c=$('#clk'),d=$('#dt');if(c)c.textContent=n.toLocaleTimeString('fr-FR');if(d)d.textContent=n.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const T=S.tmr;if(T.run&&Date.now()>=T.end){T.run=false;T.left=0;save();try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}toast('⏰ Temps écoulé !');render();return}
+document.querySelectorAll('.tm').forEach(e=>e.textContent=fmt(tl()))}
+/* ===== Vues ===== */
+const top=(t,v)=>`<div class="top"><button class="ic" data-a="go" data-v="${v||'home'}" aria-label="Retour">←</button><h1>${t}</h1><span class="mini" id="clk"></span></div>`;
+function vHome(){const on=S.started&&S.phase!=='over',can=S.started||S.players.length;
+return `<header class="hero"><div class="moon"></div><h1>LOUPS-GAROUS</h1><p class="sub">GAME MANAGER</p><p class="loc">Pôle Universitaire de Koléa</p><span class="tag">KOLÉA CAMPUS EDITION</span><div class="clock"><b id="clk"></b><span id="dt"></span></div></header>
+<main class="grid"><button class="card" data-a="new"><i>🌑</i><b>Nouvelle Partie</b><small>Créer et configurer</small></button>
+<button class="card" data-a="manage" ${can?'':'disabled'}><i>🎛️</i><b>Gérer la Partie</b><small>${S.started?esc(S.name||'Partie')+(S.phase==='over'?' (terminée)':''):can?'Configuration en cours':'Aucune partie'}</small></button>
+<button class="card" data-a="go" data-v="rules"><i>📜</i><b>Règles &amp; Aides</b><small>Phases et rôles</small></button>
+<button class="card" data-a="end" ${on?'':'disabled'}><i>🏁</i><b>Terminer la Partie</b><small>Avec confirmation</small></button></main>
+<footer>Created by @ibaszet</footer>`}
+function vSetup(){syncSlots();const c=check(),n=S.players.length;
+const modes=`<div class="chips"><button class="chip" data-a="rall">🎲 Tout au hasard</button><button class="chip" data-a="rfill">🎲 Compléter au hasard</button><button class="chip" data-a="rclr">Vider</button></div>`;
+const slots=S.slots.length?S.slots.map((x,i)=>`<div class="slot"><span>${R[x.r][1]} ${R[x.r][0]}</span><select data-slot="${i}"><option value="">— Choisir —</option>${S.players.map(p=>`<option value="${p.id}" ${x.p===p.id?'selected':''} ${S.slots.some((y,j)=>j!==i&&y.p===p.id)?'disabled':''}>${esc(p.name)}</option>`).join('')}</select></div>`).join(''):'<p class="empty">Ajoutez des rôles ci-dessus.</p>';
+const vl=S.autoVill?`<div class="slot"><span>${R.vill[1]} Villageois</span><em class="muted">Auto : ${c.empty?'—':c.un} restant(s)</em></div>`:'';
+return top('Nouvelle partie')+`<section class="panel"><h2>Partie</h2><input id="gn" placeholder="Nom de la partie" value="${esc(S.name)}" maxlength="40"></section>
+<section class="panel"><h2>Joueurs (${n})</h2><form id="pf" class="row"><input id="pn" placeholder="Nom du joueur" maxlength="24" autocomplete="off"><button class="btn">Ajouter</button></form>
+${n?`<ul class="list">${S.players.map(p=>`<li><span>${esc(p.name)}</span><span><button class="ic" data-a="ren" data-id="${p.id}" aria-label="Renommer">✎</button> <button class="ic" data-a="del" data-id="${p.id}" aria-label="Supprimer">✕</button></span></li>`).join('')}</ul>`:'<p class="empty">Aucun joueur. Ajoutez au moins 4 noms.</p>'}</section>
+<section class="panel"><h2>Rôles</h2><div class="chips"><button class="chip" data-a="pre" data-k="s">Simple</button><button class="chip" data-a="pre" data-k="c">Classique</button><button class="chip" data-a="pre" data-k="f">Complet</button></div>
+${Object.keys(R).map(r=>`<div class="rr"><span>${R[r][1]} ${R[r][0]}</span>${r==='vill'&&S.autoVill?'<em>le reste</em>':`<span class="step"><button class="ic" data-a="cnt" data-r="${r}" data-d="-1">−</button><b>${S.counts[r]}</b><button class="ic" data-a="cnt" data-r="${r}" data-d="1">+</button></span>`}</div>`).join('')}
+<label class="chk"><input type="checkbox" id="av" ${S.autoVill?'checked':''}> Villageois = joueurs restants</label></section>
+<section class="panel"><h2>Distribution (privée)</h2>${modes}${slots}${vl}
+<div class="alert o">Attribués : <b>${c.used}</b>/${S.autoVill?S.slots.length:n} · Sans rôle explicite : <b>${c.un}</b>${S.autoVill&&!c.empty&&c.un?' (→ Villageois)':''}</div>
+${c.e.map(x=>`<div class="alert e">⛔ ${x}</div>`).join('')}${c.w.map(x=>`<div class="alert w">⚠️ ${x}</div>`).join('')}
+<button class="btn pri" data-a="cdist" ${c.e.length||c.empty?'disabled':''}>Confirmer la distribution</button></section>
+<section class="panel"><h2>Règles maison</h2><label class="muted">En cas d’égalité au vote</label><select id="tie"><option value="revote" ${S.set.tie==='revote'?'selected':''}>Nouveau vote</option><option value="none" ${S.set.tie==='none'?'selected':''}>Aucune élimination</option><option value="random" ${S.set.tie==='random'?'selected':''}>Tirage au sort</option></select>
+<label class="chk"><input type="checkbox" id="par" ${S.set.parity?'checked':''}> Victoire des loups à parité</label>
+<label class="chk"><input type="checkbox" id="dv" ${S.set.deadVote?'checked':''}> Les éliminés peuvent voter</label></section>`}
+function timerBox(){const T=S.tmr;return `<div class="panel tmr"><span class="tm big"></span><div class="row"><button class="btn sm" data-a="ts">${T.run?'…':T.left<T.dur&&T.left>0?'▶ Reprendre':'▶ Démarrer'}</button><button class="btn sm" data-a="tp">⏸ Pause</button><button class="btn sm" data-a="tr">↺ Reset</button></div><div class="row"><input id="dur" type="number" min="1" max="60" value="${Math.round(T.dur/60)}" aria-label="Minutes"><span class="muted">min</span></div></div>`}
+function sel(id,l,ex=[]){return `<select id="${id}"><option value="">${l}</option>${alive().filter(p=>!ex.includes(p.id)).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>`}
+function nightPanel(){const s=steps(),r=s[S.step];if(!r)return `<button class="btn pri" data-a="next">Lever le jour ☀️</button>`;const nd=S.nd;
+const hs=S.players.filter(p=>p.alive&&p.role===r).map(p=>esc(p.name)).join(', ')||'—';let b='';
+if(r==='cup')b=`<p>Cupidon désigne deux amoureux.</p>${sel('s1','Amoureux 1')}<br><br>${sel('s2','Amoureux 2')}<button class="btn pri" data-a="n-cup">Enregistrer</button>${S.lovers.length?`<p class="alert o">💘 ${S.lovers.map(i=>esc(P(i).name)).join(' & ')}</p>`:''}`;
+if(r==='sal')b=`<p>Qui protéger ? (pas le même joueur que la nuit dernière)</p>${sel('s1','Joueur protégé',S.lastSave?[S.lastSave]:[])}<button class="btn pri" data-a="n-sal">Enregistrer</button>${nd.save?`<p class="alert o">🛡️ ${esc(P(nd.save).name)}</p>`:''}`;
+if(r==='voy')b=`<p>La Voyante désigne un joueur.</p>${sel('s1','Joueur observé')}<button class="btn pri" data-a="n-voy">Révéler le rôle</button>${nd.seen?`<p class="alert o">🔮 ${esc(P(nd.seen).name)} : <b>${R[P(nd.seen).role][1]} ${R[P(nd.seen).role][0]}</b></p>`:''}`;
+if(r==='loup')b=`<p>Les loups désignent leur victime.</p>${sel('s1','Victime',S.players.filter(p=>p.role==='loup').map(p=>p.id))}<button class="btn pri" data-a="n-loup">Enregistrer</button>${nd.victim?`<p class="alert o">🐺 Victime : ${esc(P(nd.victim).name)}</p>`:''}`;
+if(r==='sor'){b=`<p>${nd.victim?'Victime des loups : <b>'+esc(P(nd.victim).name)+'</b>':'Aucune victime désignée.'}</p>`;
+if(nd.victim&&!S.pot.heal&&!nd.heal)b+=`<button class="btn" data-a="n-heal">🧪 Sauver la victime</button>`;else b+=`<p class="muted">Potion de vie ${nd.heal?'utilisée cette nuit':'épuisée ou inutile'}.</p>`;
+if(!S.pot.poison&&!nd.poison)b+=`<br><br>${sel('s1','Empoisonner…')}<button class="btn red" data-a="n-poi">☠ Empoisonner</button>`;else b+=`<p class="muted">Potion de mort ${nd.poison?'utilisée : '+esc(P(nd.poison).name):'épuisée'}.</p>`}
+if(r==='pf')b='<p>La Petite Fille peut espionner. Aucune action à enregistrer.</p>';
+return `<div class="panel"><h2>🌙 Nuit ${S.night} · étape ${S.step+1}/${s.length}</h2><div class="role">${R[r][1]} ${R[r][0]}</div><p class="muted">Joueur(s) : ${hs}</p>${b}<button class="btn pri" data-a="step">${S.step+1<s.length?'Étape suivante ➜':'Lever le jour ☀️'}</button></div>`}
+function dayPanel(){return `<div class="panel"><h2>☀️ Jour ${S.night}</h2><p class="muted">Annoncez les morts, lancez la discussion.</p><form id="af" class="row"><input id="an" placeholder="Annonce publique" maxlength="120"><button class="btn">Annoncer</button></form><button class="btn pri" data-a="next">Lancer le vote 🗳️</button></div>`}
+function votePanel(){const cap=S.set.deadVote?S.players.length:alive().length,tot=Object.values(S.votes).reduce((a,b)=>a+b,0);
+return `<div class="panel"><h2>🗳️ Vote</h2><p class="muted">Voix : <b>${tot}</b>/${cap}${S.set.deadVote?'':' (seuls les vivants votent)'}</p>${alive().map(p=>`<div class="vr"><span>${esc(p.name)}</span><span class="step"><button class="ic" data-a="vt" data-id="${p.id}" data-d="-1">−</button><b>${S.votes[p.id]||0}</b><button class="ic" data-a="vt" data-id="${p.id}" data-d="1">+</button></span></div>`).join('')}<button class="btn pri" data-a="vok">Confirmer l’élimination</button></div>`}
+function hunterBox(){const h=P(S.hunter);return `<div class="panel warn"><h2>🏹 Le Chasseur tire !</h2><p>${esc(h.name)} est éliminé(e) et désigne une cible.</p>${sel('s1','Cible')}<button class="btn red" data-a="hs" style="width:100%;margin-top:8px">Tirer</button><button class="btn" data-a="hn" style="width:100%;margin-top:8px">Ne pas tirer</button></div>`}
+function vDash(){const al=alive().length;
+const p=S.hunter?hunterBox():S.phase==='night'?nightPanel():S.phase==='day'?dayPanel():S.phase==='vote'?votePanel():`<button class="btn pri" data-a="go" data-v="win">Voir l’écran de victoire</button>`;
+const tabs=[['pl','Joueurs'],['ro','Rôles (MJ)'],['jr','Journal']];let tc='';
+if(S.tab==='pl')tc=`<ul class="list">${S.players.map(x=>`<li class="${x.alive?'':'dead'}"><span>${x.alive?'🟢':'⚫'} ${esc(x.name)}</span><button class="ic" data-a="tog" data-id="${x.id}" title="Éliminer / réanimer">${x.alive?'☠':'↺'}</button></li>`).join('')}</ul>`;
+if(S.tab==='ro')tc=`<div class="alert w">🔒 Privé : ne montrez pas cet écran aux joueurs.</div><ul class="list">${S.players.map(x=>`<li class="${x.alive?'':'dead'}"><span>${esc(x.name)}</span><span class="pill">${R[x.role][1]} ${R[x.role][0]}</span></li>`).join('')}</ul>`;
+if(S.tab==='jr')tc=S.log.length?`<ul class="list log">${S.log.slice(0,60).map(l=>`<li><time>${l.t}</time>${esc(l.x)}</li>`).join('')}</ul>`:'<p class="empty">Journal vide.</p>';
+return top(esc(S.name||'Partie'))+`<div class="stats"><div><b>${S.players.length}</b>joueurs</div><div><b>${al}</b>vivants</div><div><b>${S.players.length-al}</b>éliminés</div></div>
+<div class="phases">${Object.keys(PH).map(k=>`<span class="${S.phase===k?'on':''}">${PH[k][1]}<small>${PH[k][0]}</small></span>`).join('')}</div>${timerBox()}${p}
+${S.phase!=='over'&&!S.hunter?`<div class="row"><button class="btn" style="flex:1" data-a="next">⏭ Phase suivante</button><button class="btn" style="flex:1" data-a="topub">👁 Vue publique</button></div>
+<details class="panel"><summary>Victoire manuelle (règle maison)</summary><div class="row"><button class="btn sm" data-a="ov" data-t="village">Village</button><button class="btn sm" data-a="ov" data-t="loups">Loups</button><button class="btn sm" data-a="ov" data-t="none">Égalité</button></div></details>`:''}
+<div class="tabs">${tabs.map(t=>`<button class="${S.tab===t[0]?'on':''}" data-a="tab" data-t="${t[0]}">${t[1]}</button>`).join('')}</div><div class="panel">${tc}</div>`}
+function vPub(){const dd=S.players.filter(p=>!p.alive);
+return `<div class="pub"><div class="top"><h1>${esc(S.name||'Partie')}</h1><span class="mini" id="clk"></span></div><div class="panel"><div class="role">${PH[S.phase][1]} ${PH[S.phase][0]}${S.phase==='night'||S.phase==='day'?' '+S.night:''}</div><span class="tm big"></span></div>
+<div class="panel"><h2>En vie (${alive().length})</h2><div class="pl">${alive().map(p=>`<div>${esc(p.name)}</div>`).join('')}</div></div>
+${dd.length?`<div class="panel"><h2>Éliminés</h2><div class="pl">${dd.map(p=>`<div class="dead">${esc(p.name)}</div>`).join('')}</div></div>`:''}
+<div class="panel"><h2>Annonces</h2>${S.pub.length?`<ul class="list log">${S.pub.slice(0,12).map(l=>`<li><time>${l.t}</time>${esc(l.x)}</li>`).join('')}</ul>`:'<p class="empty">Rien à signaler.</p>'}</div>
+<button class="btn" data-a="frompub">🔒 Retour Maître du Jeu</button></div>`}
+function vWin(){const t=S.win.t,tx={village:['🏡','Victoire du Village'],loups:['🐺','Victoire des Loups-Garous'],none:['🌘','Partie terminée']}[t];
+return `<div class="win"><div class="moon"></div><h1>${tx[0]} ${tx[1]}</h1><p class="muted">${esc(S.name||'Partie')} · ${S.night} nuit(s) · ${alive().length} survivant(s)</p></div>
+<div class="panel"><h2>Résumé</h2><ul class="list">${S.players.map(x=>`<li class="${x.alive?'':'dead'}"><span>${esc(x.name)}</span><span class="pill">${R[x.role][1]} ${R[x.role][0]}</span></li>`).join('')}</ul></div>
+${S.hist?`<div class="panel"><h2>Historique</h2><ul class="list log">${S.log.slice().reverse().map(l=>`<li><time>${l.t}</time>${esc(l.x)}</li>`).join('')}</ul></div>`:''}
+<button class="btn" style="width:100%;margin-bottom:8px" data-a="hist">${S.hist?'Masquer':'Revoir'} l’historique</button><button class="btn pri" data-a="new">Nouvelle partie</button><button class="btn" style="width:100%;margin-top:8px" data-a="go" data-v="home">Accueil</button>`}
+function vRules(){return top('Règles &amp; Aides')+`<div class="panel"><h2>Phases</h2><ul class="list"><li>🌙 <b>Nuit</b> : chaque rôle agit dans l’ordre, les yeux fermés pour les autres.</li><li>☀️ <b>Jour</b> : annonce des morts, discussion.</li><li>🗳️ <b>Vote</b> : le village élimine un suspect.</li><li>🏆 <b>Fin</b> : le Village gagne sans loups ; les loups gagnent à parité.</li></ul></div>
+<div class="panel"><h2>Rôles</h2><ul class="list"><li>🐺 <b>Loup-Garou</b> : dévore une victime chaque nuit.</li><li>🧑‍🌾 <b>Villageois</b> : aucun pouvoir, vote le jour.</li><li>🔮 <b>Voyante</b> : découvre le rôle d’un joueur chaque nuit.</li><li>🧪 <b>Sorcière</b> : une potion de vie, une potion de mort.</li><li>🏹 <b>Chasseur</b> : tire sur un joueur en mourant.</li><li>💘 <b>Cupidon</b> : lie deux amoureux (nuit 1) ; si l’un meurt, l’autre aussi.</li><li>👧 <b>Petite Fille</b> : peut espionner les loups.</li><li>🛡️ <b>Salvateur</b> : protège un joueur (pas deux nuits de suite le même).</li></ul></div>
+<div class="panel"><h2>Conseils MJ</h2><p class="muted">Une seule partie à la fois. Utilisez la vue publique pour l’écran visible par tous : elle ne montre jamais les rôles. Tout est sauvegardé automatiquement.</p></div>`}
+/* ===== Rendu ===== */
+function render(){const v=S.view;let h;
+if(v==='setup')h=vSetup();else if(v==='dash'&&S.started)h=vDash();else if(v==='rules')h=vRules();else if(v==='public'&&S.started)h=vPub();else if(v==='win'&&S.win)h=vWin();else{S.view='home';h=vHome()}
+$('#app').innerHTML=h;tick()}
+/* ===== Actions ===== */
+function addPlayer(name,skip){name=name.trim().replace(/\s+/g,' ');if(!name){toast('Entrez un nom.');return false}
+if(S.players.some(p=>p.id!==skip&&p.name.toLowerCase()===name.toLowerCase())){toast('Ce nom existe déjà.');return false}
+if(!skip&&S.players.length>=30){toast('Maximum 30 joueurs.');return false}
+if(skip)P(skip).name=name;else S.players.push({id:uid(),name,alive:true,role:null});return true}
+const v1=()=>($('#s1')||{}).value||'';
+const A={
+go(b){S.view=b.dataset.v;done()},
+no(){cb=null;closeAsk()},yes(){const f=cb;cb=null;closeAsk();f&&f()},
+new(){const go=()=>{const s=S.set;S=def();S.set=s;S.view='setup';done()};if(S.started&&S.phase!=='over')ask('Une partie est en cours. La remplacer par une nouvelle ? (progression perdue)',go,'Remplacer');else go()},
+manage(){S.view=S.started?'dash':'setup';done()},
+end(){ask('Terminer la partie en cours ?',()=>{setWin('none');done()},'Terminer')},
+ren(b){const p=P(b.dataset.id),v=prompt('Nouveau nom :',p.name);if(v!==null&&addPlayer(v,p.id))done()},
+del(b){S.players=S.players.filter(p=>p.id!==b.dataset.id);done()},
+cnt(b){const r=b.dataset.r,n=S.counts[r]+ +b.dataset.d;if(n<0||n>(r==='loup'||r==='vill'?15:1)&&r!=='loup'&&r!=='vill')return;if(n<0||n>15)return;S.counts[r]=n;done()},
+pre(b){const n=S.players.length,k=b.dataset.k,l=Math.max(1,Math.round(n/4));S.autoVill=true;
+S.counts=Object.assign(def().counts,{loup:l,voy:1,sor:k==='s'?0:n>=6?1:0,chas:k==='s'?0:n>=6?1:0});
+if(k==='f')Object.assign(S.counts,{cup:1,pf:n>=8?1:0,sal:n>=8?1:0});done()},
+rall(){syncSlots();S.slots.forEach(x=>x.p=null);A.rfill()},
+rfill(){syncSlots();const u=shuf(S.players.map(p=>p.id).filter(i=>!S.slots.some(x=>x.p===i)));S.slots.forEach(x=>{if(!x.p&&u.length)x.p=u.pop()});done()},
+rclr(){S.slots.forEach(x=>x.p=null);done()},
+cdist(){const c=check();if(c.e.length||c.empty)return toast('Distribution invalide.');ask('Confirmer la distribution et lancer la partie ?<br><small class="muted">Les rôles resteront privés.</small>',()=>{confirmDist();done()},'Lancer')},
+ts(){const T=S.tmr;if(T.run)return;if(T.left<=0)T.left=T.dur;T.run=true;T.end=Date.now()+T.left*1000;done()},
+tp(){const T=S.tmr;if(!T.run)return;T.left=tl();T.run=false;done()},
+tr(){S.tmr.run=false;S.tmr.left=S.tmr.dur;done()},
+tab(b){S.tab=b.dataset.t;done()},
+tog(b){const p=P(b.dataset.id);if(p.alive){ask('Éliminer '+esc(p.name)+' ?',()=>{kill([p.id],'décision MJ');done()},'Éliminer')}else{p.alive=true;addLog('↺ '+p.name+' réanimé(e).','↺ '+p.name+' revient en jeu.');done()}},
+'n-cup'(){const a=v1(),b=($('#s2')||{}).value;if(!a||!b||a===b)return toast('Choisissez deux joueurs différents.');S.lovers=[a,b];addLog('💘 Amoureux : '+P(a).name+' & '+P(b).name);done()},
+'n-sal'(){const v=v1();if(!v)return toast('Choisissez un joueur.');S.nd.save=v;addLog('🛡️ Protégé : '+P(v).name);done()},
+'n-voy'(){const v=v1();if(!v)return toast('Choisissez un joueur.');S.nd.seen=v;addLog('🔮 Voyante observe '+P(v).name);done()},
+'n-loup'(){const v=v1();if(!v)return toast('Choisissez une victime.');S.nd.victim=v;addLog('🐺 Victime désignée : '+P(v).name);done()},
+'n-heal'(){S.nd.heal=true;S.pot.heal=true;addLog('🧪 Potion de vie utilisée.');done()},
+'n-poi'(){const v=v1();if(!v)return toast('Choisissez un joueur.');S.nd.poison=v;S.pot.poison=true;addLog('☠ Poison sur '+P(v).name);done()},
+step(){const s=steps();if(S.step+1<s.length){S.step++;done()}else nextPhase()},
+next(){nextPhase()},
+vt(b){const id=b.dataset.id,d=+b.dataset.d,cap=S.set.deadVote?S.players.length:alive().length,tot=Object.values(S.votes).reduce((a,c)=>a+c,0),c=S.votes[id]||0;
+if(d>0&&tot>=cap)return toast('Toutes les voix sont attribuées.');if(c+d<0)return;S.votes[id]=c+d;done()},
+vok(){const v=S.votes,ids=Object.keys(v).filter(k=>v[k]>0);if(!ids.length)return toast('Aucun vote enregistré.');ask('Valider le résultat du vote ?',()=>{doVote()})},
+hs(){const v=v1();if(!v)return toast('Choisissez une cible.');const h=P(S.hunter);S.hunter=null;addLog('🏹 '+h.name+' tire sur '+P(v).name);kill([v],'Chasseur');done()},
+hn(){S.hunter=null;checkWin();done()},
+topub(){ask('⚠️ Vous allez afficher la <b>vue publique</b>. Les rôles y sont masqués, mais vérifiez que l’écran est prêt à être vu de tous.',()=>{S.view='public';done()},'Afficher')},
+frompub(){ask('Revenir à l’interface privée du Maître du Jeu ? Assurez-vous que personne ne regarde l’écran.',()=>{S.view='dash';done()},'Revenir')},
+ov(b){const t=b.dataset.t;ask('Déclarer la fin de partie (victoire manuelle) ?',()=>{S.hunter=null;setWin(t);done()},'Terminer')},
+hist(){S.hist=!S.hist;done()}};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a])A[b.dataset.a](b)});
+document.addEventListener('change',e=>{const t=e.target;
+if(t.dataset.slot!==undefined)S.slots[+t.dataset.slot].p=t.value||null;
+else if(t.id==='av')S.autoVill=t.checked;
+else if(t.id==='tie')S.set.tie=t.value;
+else if(t.id==='par')S.set.parity=t.checked;
+else if(t.id==='dv')S.set.deadVote=t.checked;
+else if(t.id==='dur'){const m=Math.min(60,Math.max(1,+t.value||3));S.tmr.dur=m*60;if(!S.tmr.run)S.tmr.left=S.tmr.dur}
+else return;done()});
+document.addEventListener('input',e=>{if(e.target.id==='gn'){S.name=e.target.value;save()}});
+document.addEventListener('submit',e=>{e.preventDefault();const id=e.target.id;
+if(id==='pf'){const i=$('#pn');if(addPlayer(i.value)){save();render();$('#pn').focus()}}
+if(id==='af'){const v=$('#an').value.trim();if(!v)return toast('Écrivez une annonce.');addLog('📢 '+v,v);done()}});
+render();setInterval(tick,1000);
+</script>
+</body>
+</html>
